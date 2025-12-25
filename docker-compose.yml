@@ -326,6 +326,33 @@ services:
         condition: service_started
     logging: *logging
 
+  # Auth Proxy (htpasswd authentication)
+  auth-proxy:
+    image: ${IMAGE_NAME}:${DEMO_VERSION}-auth-proxy
+    container_name: auth-proxy
+    build:
+      context: ./
+      dockerfile: ${AUTH_PROXY_DOCKERFILE}
+      cache_from:
+        - ${IMAGE_NAME}:${IMAGE_VERSION}-auth-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+    restart: unless-stopped
+    ports:
+      - "${AUTH_PROXY_PORT}:${AUTH_PROXY_PORT}"
+    environment:
+      - AUTH_PROXY_PORT
+      - ENVOY_PORT
+      - FRONTEND_PROXY_ADDR
+    depends_on:
+      frontend-proxy:
+        condition: service_started
+    volumes:
+      - ./src/auth-proxy/htpasswd:/etc/nginx/htpasswd:ro
+    logging: *logging
+
   # Frontend Proxy (Envoy)
   frontend-proxy:
     image: ${IMAGE_NAME}:${DEMO_VERSION}-frontend-proxy

@@ -47,6 +47,53 @@ your preferred deployment method:
 - [Docker](https://opentelemetry.io/docs/demo/docker_deployment/)
 - [Kubernetes](https://opentelemetry.io/docs/demo/kubernetes_deployment/)
 
+## Authentication Proxy (Auth-Proxy)
+
+The demo includes an optional authentication proxy (auth-proxy) that provides basic HTTP authentication to the frontend application. This proxy runs on port 8080 and forwards authenticated requests to the Envoy proxy on port 8081.
+
+### Default Credentials
+
+The default credentials are:
+- **Username:** `admin`
+- **Password:** `admin`
+
+### Changing the Password
+
+To change the password, you need to regenerate the htpasswd file located at `src/auth-proxy/htpasswd`.
+
+**Prerequisites:**
+- Install Apache utilities: `apt-get install apache2-utils` (Linux) or `brew install httpd` (macOS)
+
+**Steps:**
+
+1. Generate a new htpasswd file with a new password:
+   ```bash
+   htpasswd -c src/auth-proxy/htpasswd admin
+   ```
+   This will prompt you to enter a new password twice.
+
+2. To add additional users:
+   ```bash
+   htpasswd -b src/auth-proxy/htpasswd newuser newpassword
+   ```
+
+3. Restart the auth-proxy container to apply changes:
+   ```bash
+   docker-compose restart auth-proxy
+   ```
+
+### Port Mapping
+
+- **Port 8080** (external): Auth-Proxy with basic authentication
+- **Port 8081** (external): Envoy frontend proxy (accessible after authentication)
+- **Port 8089**: Load generator (Locust)
+
+### Disabling Authentication
+
+To disable the authentication proxy and access the application directly on port 8080, you can:
+1. Stop the auth-proxy container: `docker-compose stop auth-proxy`
+2. Expose port 8081 directly from the frontend-proxy service
+
 ## Documentation
 
 For detailed documentation, see [Demo Documentation][docs]. If you're curious
